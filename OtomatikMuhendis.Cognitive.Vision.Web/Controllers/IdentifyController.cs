@@ -8,23 +8,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.Face;
 using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
+using OtomatikMuhendis.Cognitive.Vision.Web.Core;
 using OtomatikMuhendis.Cognitive.Vision.Web.Models;
 
 namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
 {
     public class IdentifyController : Controller
     {
-        public static IHostingEnvironment _environment;
+        private static IHostingEnvironment _environment;
 
-        private const string subscriptionKey = "1e500aa5ba4144538e9764a18788dff7";
+        private readonly IFaceClient _faceClient;
 
-        // Specify the features to return
-        private static readonly FaceAttributeType[] faceAttributes =
-            { FaceAttributeType.Age, FaceAttributeType.Gender, FaceAttributeType.Smile, FaceAttributeType.Emotion };
-
-        public IdentifyController(IHostingEnvironment environment)
+        public IdentifyController(IHostingEnvironment environment, IFaceClient faceClient)
         {
             _environment = environment;
+            _faceClient = faceClient;
         }
 
         public IActionResult Index()
@@ -35,14 +33,6 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(List<IFormFile> files)
         {
-            FaceClient faceClient = new FaceClient(
-                new ApiKeyServiceClientCredentials(subscriptionKey),
-                new System.Net.Http.DelegatingHandler[] { });
-
-            faceClient.Endpoint = "https://westeurope.api.cognitive.microsoft.com";
-
-            string personGroupId = "myfriends";
-
             var fileName = "\\uploads\\" + Convert.ToString(Guid.NewGuid()) + ".jpg";
 
             var filePath = _environment.WebRootPath + fileName;
@@ -61,19 +51,19 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
                     using (Stream imageStream = new FileStream(filePath, FileMode.Open))
                     {
                         IList<DetectedFace> faceList =
-                            await faceClient.Face.DetectWithStreamAsync(imageStream, true, false, faceAttributes);
+                            await _faceClient.Face.DetectWithStreamAsync(imageStream);
 
                         var faceIds = faceList.Where(face => face.FaceId.HasValue).Select(face => face.FaceId.Value).ToList();
 
-                        var results = await faceClient.Face.IdentifyAsync(faceIds, personGroupId);
+                        var results = await _faceClient.Face.IdentifyAsync(faceIds, AzureCognitiveServiceParameters.PersonGroupId);
                         foreach (var identifyResult in results)
                         {
                             if (identifyResult.Candidates.Any())
                             {
                                 // Get top 1 among all candidates returned
                                 var candidateId = identifyResult.Candidates[0].PersonId;
-                                var person = await faceClient.PersonGroupPerson.GetAsync(personGroupId, candidateId);
-                                analysisResult += string.Format("Identified as {0}", person.Name) + Environment.NewLine;
+                                var person = await _faceClient.PersonGroupPerson.GetAsync(AzureCognitiveServiceParameters.PersonGroupId, candidateId);
+                                analysisResult += $"Identified as {person.Name}" + Environment.NewLine;
                             }
                             else
                             {

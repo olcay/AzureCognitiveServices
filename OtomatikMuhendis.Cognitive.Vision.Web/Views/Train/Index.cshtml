@@ -1,4 +1,5 @@
-﻿@{
+﻿@using OtomatikMuhendis.Cognitive.Vision.Web.Core
+@{
     ViewData["Title"] = "Face Detection";
 }
 
@@ -33,15 +34,27 @@
             {
                 foreach (var filePath in Model.FilePathList)
                 {
-                    <img src="@filePath" />
+                    <img src="@filePath"/>
                 }
             }
         </div>
         <div class="col-8">
             @if (Model != null)
             {
-                <textarea rows="30" cols="120">@Model.AnalysisResult</textarea>
+                <textarea id="txtTrainStatus" rows="30" cols="120">@Model.AnalysisResult</textarea>
             }
         </div>
     </div>
 </div>
+
+@if (Model != null)
+{
+    @section Scripts
+    {
+        <script type="text/javascript">
+            $(function() {
+                checkTrainStatus('@AzureCognitiveServiceParameters.PersonGroupId');
+            });
+        </script>
+    }
+}

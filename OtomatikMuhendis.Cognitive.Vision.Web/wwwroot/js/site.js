@@ -2,3 +2,10 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
+function checkTrainStatus(personGroupId) {
+    setInterval(function () {
+        $.get("/train/status/" + personGroupId, function (data) {
+            $("#txtTrainStatus").html('Training ' + data);
+        }); 
+    }, 1000);
+}

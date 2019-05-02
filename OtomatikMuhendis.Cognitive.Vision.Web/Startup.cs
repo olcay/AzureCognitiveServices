@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
+using Microsoft.Azure.CognitiveServices.Vision.Face;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OtomatikMuhendis.Cognitive.Vision.Web.Core;
 
 namespace OtomatikMuhendis.Cognitive.Vision.Web
 {
@@ -31,6 +30,15 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            var subscriptionKey = Environment.GetEnvironmentVariable(AzureCognitiveServiceParameters.SubscriptionKeyName);
+
+            services.AddTransient<IFaceClient>(s => new FaceClient(
+                new Microsoft.Azure.CognitiveServices.Vision.Face.ApiKeyServiceClientCredentials(subscriptionKey))
+            { Endpoint = AzureCognitiveServiceParameters.Endpoint });
+
+            services.AddTransient<IComputerVisionClient>(s => new ComputerVisionClient(
+                new Microsoft.Azure.CognitiveServices.Vision.ComputerVision.ApiKeyServiceClientCredentials(subscriptionKey))
+            { Endpoint = AzureCognitiveServiceParameters.Endpoint });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

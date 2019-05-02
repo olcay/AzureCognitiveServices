@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -16,17 +15,23 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
 {
     public class FaceController : Controller
     {
-        public static IHostingEnvironment _environment;
+        private static IHostingEnvironment _environment;
 
-        private const string subscriptionKey = "1e500aa5ba4144538e9764a18788dff7";
+        private readonly IFaceClient _faceClient;
 
         // Specify the features to return
-        private static readonly FaceAttributeType[] faceAttributes =
-            { FaceAttributeType.Age, FaceAttributeType.Gender, FaceAttributeType.Smile, FaceAttributeType.Emotion };
+        private static readonly FaceAttributeType[] FaceAttributes =
+            { FaceAttributeType.Age,
+                FaceAttributeType.Gender,
+                FaceAttributeType.Smile,
+                FaceAttributeType.Emotion,
+                FaceAttributeType.HeadPose
+            };
 
-        public FaceController(IHostingEnvironment environment)
+        public FaceController(IHostingEnvironment environment, IFaceClient faceClient)
         {
             _environment = environment;
+            _faceClient = faceClient;
         }
 
         public IActionResult Index()
@@ -37,12 +42,6 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(List<IFormFile> files)
         {
-            FaceClient faceClient = new FaceClient(
-                new ApiKeyServiceClientCredentials(subscriptionKey),
-                new System.Net.Http.DelegatingHandler[] { });
-
-            faceClient.Endpoint = "https://westeurope.api.cognitive.microsoft.com";
-
             var fileName = "\\uploads\\" + Convert.ToString(Guid.NewGuid()) + ".jpg";
 
             var filePath = _environment.WebRootPath + fileName;
@@ -61,8 +60,8 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
                     using (Stream imageStream = new FileStream(filePath, FileMode.Open))
                     {
                         IList<DetectedFace> faceList =
-                            await faceClient.Face.DetectWithStreamAsync(
-                                imageStream, true, false, faceAttributes);
+                            await _faceClient.Face.DetectWithStreamAsync(
+                                imageStream, true, false, FaceAttributes);
                         analysisResult = ReadResults(faceList);
                     }
                 }

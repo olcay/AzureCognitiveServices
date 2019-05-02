@@ -6,27 +6,22 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.Face;
+using OtomatikMuhendis.Cognitive.Vision.Web.Core;
 using OtomatikMuhendis.Cognitive.Vision.Web.Models;
 
 namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
 {
     public class TrainController : Controller
     {
-        public static IHostingEnvironment _environment;
+        private static IHostingEnvironment _environment;
 
-        private const string subscriptionKey = "1e500aa5ba4144538e9764a18788dff7";
+        private readonly IFaceClient _faceClient;
 
-        private FaceClient _faceClient;
 
-        public TrainController(IHostingEnvironment environment)
+        public TrainController(IHostingEnvironment environment, IFaceClient faceClient)
         {
             _environment = environment;
-
-            _faceClient = new FaceClient(
-                new ApiKeyServiceClientCredentials(subscriptionKey),
-                new System.Net.Http.DelegatingHandler[] { });
-
-            _faceClient.Endpoint = "https://westeurope.api.cognitive.microsoft.com";
+            _faceClient = faceClient;
         }
 
         [HttpGet("train/status/{personGroupId}")]
@@ -51,16 +46,14 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(List<IFormFile> files, string name)
         {
-            string personGroupId = "myfriends";
-
-            //await _faceClient.PersonGroup.CreateAsync(personGroupId, "My friends");
+            //await _faceClient.PersonGroup.CreateAsync(AzureCognitiveServiceParameters.PersonGroupId, "My friends");
 
             var friend1 = await _faceClient.PersonGroupPerson.CreateAsync(
-                personGroupId,
+                AzureCognitiveServiceParameters.PersonGroupId,
                 name
             );
 
-            List<string> filePathList = new List<string>();
+            var filePathList = new List<string>();
             
             foreach (var formFile in files)
             {
@@ -78,14 +71,14 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
 
                     using (Stream imageStream = new FileStream(filePath, FileMode.Open))
                     {
-                        await _faceClient.PersonGroupPerson.AddFaceFromStreamAsync(personGroupId, friend1.PersonId, imageStream);
+                        await _faceClient.PersonGroupPerson.AddFaceFromStreamAsync(AzureCognitiveServiceParameters.PersonGroupId, friend1.PersonId, imageStream);
                     }
                 }
             }
 
-            await _faceClient.PersonGroup.TrainAsync(personGroupId);
+            await _faceClient.PersonGroup.TrainAsync(AzureCognitiveServiceParameters.PersonGroupId);
 
-            return View(new ResultViewModel { FilePathList = filePathList, AnalysisResult = "Training Started" });
+            return View(new ResultViewModel { FilePathList = filePathList, AnalysisResult = "Training started" });
         }
     }
 }
