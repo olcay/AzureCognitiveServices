@@ -43,11 +43,16 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
             return View();
         }
 
+        public async Task<IActionResult> CreateGroup()
+        {
+            await _faceClient.PersonGroup.CreateAsync(AzureCognitiveServiceParameters.PersonGroupId, "My person group");
+
+            return RedirectToAction("Index");
+        }
+
         [HttpPost]
         public async Task<IActionResult> Index(List<IFormFile> files, string name)
         {
-            //await _faceClient.PersonGroup.CreateAsync(AzureCognitiveServiceParameters.PersonGroupId, "My friends");
-
             var friend1 = await _faceClient.PersonGroupPerson.CreateAsync(
                 AzureCognitiveServiceParameters.PersonGroupId,
                 name

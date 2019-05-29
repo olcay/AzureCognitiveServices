@@ -21,11 +21,16 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
 
         // Specify the features to return
         private static readonly FaceAttributeType[] FaceAttributes =
-            { FaceAttributeType.Age,
+            {
+                FaceAttributeType.Age,
                 FaceAttributeType.Gender,
                 FaceAttributeType.Smile,
-                FaceAttributeType.Emotion,
-                FaceAttributeType.HeadPose
+                FaceAttributeType.HeadPose,
+                FaceAttributeType.FacialHair,
+                FaceAttributeType.Glasses,
+                FaceAttributeType.Makeup,
+                FaceAttributeType.Accessories,
+                FaceAttributeType.Hair
             };
 
         public FaceController(IHostingEnvironment environment, IFaceClient faceClient)

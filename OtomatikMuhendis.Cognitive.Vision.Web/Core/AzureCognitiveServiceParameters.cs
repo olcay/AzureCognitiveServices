@@ -6,6 +6,6 @@
 
         public static string Endpoint = "https://westeurope.api.cognitive.microsoft.com";
 
-        public static string PersonGroupId = "myfriends";
+        public static string PersonGroupId = "mypersongroup";
     }
 }

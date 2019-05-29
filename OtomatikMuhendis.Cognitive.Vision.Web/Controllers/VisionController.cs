@@ -26,7 +26,7 @@ namespace OtomatikMuhendis.Cognitive.Vision.Web.Controllers
             VisualFeatureTypes.Categories, VisualFeatureTypes.Description,
             VisualFeatureTypes.Faces, VisualFeatureTypes.ImageType,
             VisualFeatureTypes.Tags, VisualFeatureTypes.Color,
-            VisualFeatureTypes.Brands, VisualFeatureTypes.Objects
+            VisualFeatureTypes.Brands, VisualFeatureTypes.Objects, VisualFeatureTypes.Adult
         };
 
         public VisionController(IHostingEnvironment environment, IComputerVisionClient computerVisionClient)
